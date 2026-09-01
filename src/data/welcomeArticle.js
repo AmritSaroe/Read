@@ -6,61 +6,47 @@ export const WELCOME_ARTICLE = {
   id: 'welcome-001',
   addedAt: new Date().toISOString(),
   originalUrl: 'https://example.com',
-  title: 'Welcome to Read — your distraction-free reading space',
+  title: 'The Quiet Rebellion of Deep Reading',
   byline: 'The Read Team',
   siteName: 'Read',
-  excerpt: 'Explore the app — try switching themes, scrolling to see the progress bar, and selecting text to highlight.',
+  excerpt: 'In an age of endless notifications and infinite feeds, choosing to sit still and read a single article is a radical act of focus.',
   thumbnail: null,
-  textContent: `
-    Read strips away everything that gets in the way — ads, popups, sidebars, cookie banners — and leaves you with just the words.
+  textContent: `In an age of endless notifications, algorithmic feeds, and ephemeral micro-content, choosing to sit down and read a single article without interruption is quietly rebellious. It is a deliberate act of focus in a world designed to distract you. Every time you open an article on the modern web, you are immediately assaulted. Banners slide down from the ceiling. Chat bubbles pop up from the floor. Modals demand your email address before you've even read the first paragraph. The text itself is sliced into tiny fragments, separated by aggressive advertisements designed to pull your eyes away from the words. The medium is no longer just the message; the medium is a marketplace, and your attention is the product.
 
-    You're looking at the reading view right now. The top bar fades away as you scroll down so nothing competes for your attention. Tap anywhere in the article to bring it back.
+Reclaiming the Page
+Read was built as a sanctuary from the noise. It is a digital quiet room. When you strip away the frantic architecture of the modern web, you are left with something profound: typography, space, and thought. A well-crafted sentence doesn't need to compete with a blinking banner ad. It only asks for your time.
 
-    At the very bottom of the screen you'll always see a thin progress bar showing how far through the article you are. It never hides, even when the top chrome does.
+"Reading is not a passive consumption of words, but an active collaboration with the author's mind."
 
-    Try selecting a word or sentence — a small popover will appear above your selection with three actions: Highlight, Copy, and Share. Highlight is listed first because this app treats it as the primary action. When you tap it, the selected text gets a coloured background that persists every time you open the article.
+The interface of this app was designed with a single goal: to disappear. As you scroll, the top bar fades away. There are no share buttons flashing at the bottom, no suggested articles begging for your next click. There is only the text, formatted in a way that respects the mechanics of the human eye.
 
-    To try the theme switcher, tap the back arrow and look at the top-right of the Library screen. You'll see a small segmented control with three segments: a sun, a moon, and a contrast circle. Each one sets the theme directly. The subtext below it tells you whether you're in automatic (system-matched) mode or have made an explicit choice.
+The Mechanics of Focus
+Try switching to Sepia mode if you are reading a long essay; the reduced contrast is significantly softer on your retinas during extended sessions. If you are reading at night, the Dark mode uses a warm charcoal rather than a harsh, pure black. If you find a sentence that resonates, simply long-press to select it. The highlight function is built to feel tactile and immediate, letting you anchor important thoughts without breaking your flow.
 
-    Light mode uses a clean white background with near-black text. Dark mode uses a warm near-black — not pure #000 — to be easier on the eyes in low light. Sepia uses a cream background with warm brown text, designed for long reading sessions.
-
-    When you're ready, add a real article using the + button in the Library. Paste any newspaper URL and the app will fetch the page, extract just the article content using Mozilla's Readability engine (the same technology behind Firefox Reader View), and add it to your library. CORS proxy fetching works from the browser for most sites; on Android, the app uses native HTTP and bypasses CORS entirely.
-
-    A few things that are not yet wired up: the Aa button opens a font settings panel (coming soon), and the archive button removes the article from your library. Swipe gestures are intentionally absent on the reading screen since scroll is already the primary gesture and swipe-to-archive would conflict with normal reading.
-
-    That's the full tour. Enjoy reading without the clutter.
-  `.trim(),
+We built this because we love the web, but we missed the joy of getting lost in a good piece of writing. So go ahead. Add your favorite long-form articles, essays, and news stories. Take a deep breath, and just read.`,
   content: `
-    <p>Read strips away everything that gets in the way — ads, popups, sidebars, cookie banners — and leaves you with just the words.</p>
+    <p>In an age of endless notifications, algorithmic feeds, and ephemeral micro-content, choosing to sit down and read a single article without interruption is quietly rebellious. It is a deliberate act of focus in a world designed to distract you.</p>
 
-    <p>You're looking at the reading view right now. The top bar fades away as you scroll down so nothing competes for your attention. Tap anywhere in the article to bring it back.</p>
+    <p>Every time you open an article on the modern web, you are immediately assaulted. Banners slide down from the ceiling. Chat bubbles pop up from the floor. Modals demand your email address before you've even read the first paragraph. The text itself is sliced into tiny fragments, separated by aggressive advertisements designed to pull your eyes away from the words.</p>
 
-    <h2>The progress bar</h2>
+    <p>The medium is no longer just the message; the medium is a marketplace, and your attention is the product.</p>
 
-    <p>At the very bottom of the screen you'll always see a thin progress bar showing how far through the article you are. It never hides, even when the top chrome does.</p>
+    <h2>Reclaiming the Page</h2>
 
-    <h2>Text selection &amp; highlights</h2>
+    <p><em>Read</em> was built as a sanctuary from the noise. It is a digital quiet room.</p>
 
-    <p>Try selecting a word or sentence — a small popover will appear above your selection with three actions: <strong>Highlight</strong>, Copy, and Share. Highlight is listed first because this app treats it as the primary action. When you tap it, the selected text gets a coloured background that persists every time you open the article.</p>
+    <p>When you strip away the frantic architecture of the modern web, you are left with something profound: typography, space, and thought. A well-crafted sentence doesn't need to compete with a blinking banner ad. It only asks for your time.</p>
 
-    <blockquote>Highlighting is the primary action, not a secondary one. That's why it comes before Copy.</blockquote>
+    <blockquote>“Reading is not a passive consumption of words, but an active collaboration with the author's mind.”</blockquote>
 
-    <h2>Themes</h2>
+    <p>The interface of this app was designed with a single goal: to disappear. As you scroll, the top bar fades away. There are no share buttons flashing at the bottom, no suggested articles begging for your next click. There is only the text, formatted in a way that respects the mechanics of the human eye.</p>
 
-    <p>To try the theme switcher, tap the back arrow and look at the top-right of the Library screen. You'll see a small segmented control with three segments: a sun, a moon, and a contrast circle. Each one sets the theme directly. The subtext below it tells you whether you're in automatic (system-matched) mode or have made an explicit choice.</p>
+    <h2>The Mechanics of Focus</h2>
 
-    <p><strong>Light</strong> mode uses a clean white background with near-black text. <strong>Dark</strong> mode uses a warm near-black — not pure #000 — to be easier on the eyes in low light. <strong>Sepia</strong> uses a cream background with warm brown text, designed for long reading sessions.</p>
+    <p>Try switching to <strong>Sepia</strong> mode if you are reading a long essay; the reduced contrast is significantly softer on your retinas during extended sessions. If you are reading at night, the <strong>Dark</strong> mode uses a warm charcoal rather than a harsh, pure black.</p>
 
-    <h2>Adding articles</h2>
+    <p>If you find a sentence that resonates, simply long-press to select it. The native highlight function is built to feel tactile and immediate, letting you anchor important thoughts without breaking your flow.</p>
 
-    <p>When you're ready, add a real article using the <strong>+</strong> button in the Library. Paste any newspaper URL and the app will fetch the page, extract just the article content using Mozilla's Readability engine (the same technology behind Firefox Reader View), and add it to your library.</p>
-
-    <p>CORS proxy fetching works from the browser for most sites; on Android, the app uses native HTTP and bypasses CORS entirely, so all URLs will work.</p>
-
-    <h2>What's coming</h2>
-
-    <p>A few things that are not yet wired up: the <em>Aa</em> button opens a font settings panel, and the archive button removes the article from your library. Swipe gestures are intentionally absent on the reading screen — scroll is already the primary gesture and swipe-to-archive would conflict with normal reading.</p>
-
-    <p>That's the full tour. Enjoy reading without the clutter.</p>
+    <p>We built this because we love the web, but we missed the joy of getting lost in a good piece of writing. So go ahead. Add your favorite long-form articles, essays, and news stories. Take a deep breath, and just read.</p>
   `.trim(),
 };

@@ -1,5 +1,6 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { App as CapApp } from '@capacitor/app';
 import { useTheme } from './hooks/useTheme';
 import LibraryEmpty from './components/LibraryEmpty';
 import LibraryList from './components/LibraryList';
@@ -57,11 +58,11 @@ export default function App() {
     window.scrollTo(0, 0);
   };
 
-  const handleBack = () => {
+  const handleBack = useCallback(() => {
     log.info(Category.NAV, 'Navigating back to library');
     setView('library');
     setTimeout(() => setCurrentArticle(null), 300);
-  };
+  }, []);
 
   const handleDeleteArticle = (id) => {
     log.info(Category.APP, 'Article deleted', { id });
@@ -74,6 +75,30 @@ export default function App() {
   }, []);
 
   const themeProps = { themeMode, resolvedTheme, setThemeMode, themeSubtext };
+
+  useEffect(() => {
+    const handleBackButton = () => {
+      if (sheetOpen) {
+        setSheetOpen(false);
+        return;
+      }
+      if (settingsOpen) {
+        setSettingsOpen(false);
+        return;
+      }
+      if (view === 'reader') {
+        handleBack();
+        return;
+      }
+      CapApp.exitApp();
+    };
+
+    const listener = CapApp.addListener('backButton', handleBackButton);
+
+    return () => {
+      listener.then(l => l.remove());
+    };
+  }, [view, sheetOpen, settingsOpen, handleBack]);
 
   return (
     <div className="app-shell">

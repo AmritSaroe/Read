@@ -380,17 +380,18 @@ body {
 .spin { animation: spin 0.8s linear infinite; }
 
 /* Image and Chart Formatting */
-.reader-content img {
+.article-body img {
   max-width: 100%;
   height: auto;
+  object-fit: contain;
   border-radius: 6px;
   margin: 1.5rem 0;
   display: block;
 }
 
 /* Style captions (figures and custom Publisher chart captions) */
-.reader-content figcaption,
-.reader-content div > img + div {
+.article-body figcaption,
+.article-body div > img + div {
   font-size: 0.85rem;
   color: var(--text-secondary);
   text-align: center;

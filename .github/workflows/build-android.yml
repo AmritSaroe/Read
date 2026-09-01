@@ -9,6 +9,8 @@ jobs:
   build:
     name: Build Debug APK
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       # ── 1. Checkout ────────────────────────────────────────────────────
@@ -61,10 +63,22 @@ jobs:
         run: ./gradlew assembleDebug --no-daemon
         working-directory: android
 
-      # ── 10. Upload APK as a downloadable artifact ──────────────────────
+      # ── 10. Upload APK as a downloadable artifact (Zipped) ─────────────
       - name: Upload APK artifact
         uses: actions/upload-artifact@v5
         with:
           name: read-app-debug
           path: android/app/build/outputs/apk/debug/app-debug.apk
           retention-days: 7
+
+      # ── 11. Create a Release (Direct APK download, no ZIP) ──────────────
+      - name: Create or Update Nightly Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: nightly
+          name: Latest Build (Nightly)
+          body: "Auto-generated APK from the latest code push. Download the `.apk` file below directly to your phone."
+          files: android/app/build/outputs/apk/debug/app-debug.apk
+          prerelease: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

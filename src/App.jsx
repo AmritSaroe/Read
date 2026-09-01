@@ -77,12 +77,14 @@ export default function App() {
 
   return (
     <div className="app-shell">
-      <AnimatePresence mode="wait">
+      <AnimatePresence>
         {showSplash && (
           <SplashScreen key="splash" onDone={handleSplashDone} />
         )}
+      </AnimatePresence>
 
-        {!showSplash && view === 'library' && (
+      <AnimatePresence mode="wait">
+        {view === 'library' && (
           <motion.div
             key="library"
             initial="initial" animate="in" exit="out"
@@ -118,7 +120,7 @@ export default function App() {
           </motion.div>
         )}
 
-        {!showSplash && view === 'reader' && currentArticle && (
+        {view === 'reader' && currentArticle && (
           <motion.div
             key="reader"
             initial="initial" animate="in" exit="out"

@@ -24,7 +24,7 @@ export default function SplashScreen({ onDone }) {
       style={{
         position: 'absolute',
         inset: 0,
-        backgroundColor: '#1F1E1B',
+        backgroundColor: 'var(--bg-page)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -42,7 +42,7 @@ export default function SplashScreen({ onDone }) {
           fontFamily: 'Georgia, "Times New Roman", serif',
           fontSize: 120,
           fontWeight: 'normal',
-          color: '#F7F5EE',
+          color: 'var(--text-primary)',
         }}>
           r
         </span>

@@ -50,8 +50,8 @@ function extractThumbnail(doc) {
 }
 
 /**
- * Parses the Next.js __NEXT_DATA__ payload that LiveMint (and many HT Media properties)
- * embed in their pages. This bypasses Readability entirely and reconstructs a
+ * Parses the Next.js __NEXT_DATA__ payload that many publishers embed in their pages.
+ * This bypasses Readability entirely and reconstructs a
  * semantically correct, clean HTML document from the structured API data.
  *
  * Handles: paragraph, image, heading, list, quote, alsoread, embed, listicleElement
@@ -62,8 +62,24 @@ function parseNextData(doc) {
 
   try {
     const data = JSON.parse(scriptTag.textContent);
-    const storyDetails = data?.props?.pageProps?.storyDetails;
+    
+    // 1. Schema Variant A
+    const bsArticle = data?.props?.pageProps?.article || data?.props?.pageProps?.data?.article;
+    if (bsArticle && bsArticle.htmlContent) {
+      log.info(Category.PARSE, `Found structured data (Variant A)`);
+      return {
+        title: bsArticle.heading1 || bsArticle.pageTitle || bsArticle.meta_title,
+        byline: bsArticle.authorName || bsArticle.authorDetails?.map(a => a.name).join(', ') || '',
+        content: bsArticle.htmlContent,
+        textContent: bsArticle.htmlContent.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim(),
+        length: bsArticle.htmlContent.length,
+        excerpt: bsArticle.description || bsArticle.metaDescription || '',
+        siteName: 'Web Article',
+      };
+    }
 
+    // 2. Schema Variant B
+    const storyDetails = data?.props?.pageProps?.storyDetails;
     if (!storyDetails || !Array.isArray(storyDetails.listElement)) return null;
 
     log.info(Category.PARSE, `Found Next.js structured data payload`, {
@@ -179,7 +195,7 @@ function parseNextData(doc) {
       textContent: html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim(),
       length: html.length,
       excerpt: storyDetails.summary || storyDetails.quickReadSummary || '',
-      siteName: storyDetails.publication || 'LiveMint',
+      siteName: storyDetails.publication || 'Web Article',
     };
   } catch (err) {
     log.warn(Category.PARSE, `Failed to parse __NEXT_DATA__ payload`, { error: err.message });
@@ -238,6 +254,18 @@ export async function fetchAndParseArticle(url) {
       log.debug(Category.PARSE, `Parsed successfully from Next.js payload`);
     } else {
       log.debug(Category.PARSE, `Running Readability as fallback`);
+      
+      // Pre-process DOM: Fix lazy-loaded images so Readability doesn't strip them
+      const images = doc.querySelectorAll('img');
+      for (const img of images) {
+        const realSrc = img.getAttribute('data-src') || img.getAttribute('data-lazy-src') || img.getAttribute('data-original');
+        if (realSrc && realSrc.startsWith('http')) {
+          img.setAttribute('src', realSrc);
+        }
+        // Force display block to ensure they aren't considered hidden
+        img.style.display = 'block';
+      }
+
       const reader = new Readability(doc, { charThreshold: 100, keepClasses: false });
       article = reader.parse();
     }

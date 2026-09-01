@@ -64,7 +64,7 @@ function parseNextData(doc) {
     const data = JSON.parse(scriptTag.textContent);
     
     // 1. Schema Variant A
-    const bsArticle = data?.props?.pageProps?.article || data?.props?.pageProps?.data?.article;
+    const bsArticle = data?.props?.pageProps?.data || data?.props?.pageProps?.article;
     if (bsArticle && bsArticle.htmlContent) {
       log.info(Category.PARSE, `Found structured data (Variant A)`);
       

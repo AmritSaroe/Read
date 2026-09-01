@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { SplashScreen as CapSplashScreen } from '@capacitor/splash-screen';
 
 /**
  * SplashScreen — Serif "R" logo animation
@@ -15,6 +16,7 @@ import { motion } from 'framer-motion';
  */
 export default function SplashScreen({ onDone }) {
   useEffect(() => {
+    CapSplashScreen.hide().catch(e => console.warn(e));
     const timer = setTimeout(onDone, 2000);
     return () => clearTimeout(timer);
   }, [onDone]);
@@ -24,7 +26,7 @@ export default function SplashScreen({ onDone }) {
       style={{
         position: 'absolute',
         inset: 0,
-        backgroundColor: 'var(--bg-page)',
+        backgroundColor: '#1f1e1b',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -42,7 +44,7 @@ export default function SplashScreen({ onDone }) {
           fontFamily: 'Georgia, "Times New Roman", serif',
           fontSize: 120,
           fontWeight: 'normal',
-          color: 'var(--text-primary)',
+          color: '#F7F5EE',
         }}>
           r
         </span>

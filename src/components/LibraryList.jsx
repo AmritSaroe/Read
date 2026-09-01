@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { IconPlus, IconSettings, IconTrash } from '@tabler/icons-react';
+import { IconPlus, IconSettings, IconTrash, IconSearch } from '@tabler/icons-react';
 import { motion, AnimatePresence, useMotionValue, useTransform, animate } from 'framer-motion';
 import ThemeToggle from './ThemeToggle';
 
@@ -132,8 +132,8 @@ function SwipeableRow({ article, onOpen, onDelete, isLast }) {
                 <p style={{
                   fontSize: 14, fontWeight: 500,
                   color: 'var(--text-primary)',
-                  whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-                  marginBottom: 4, lineHeight: 1.3,
+                  marginBottom: 6, lineHeight: 1.3,
+                  wordWrap: 'break-word',
                 }}>
                   {article.title}
                 </p>
@@ -156,6 +156,14 @@ export default function LibraryList({
   articles, onOpen, onDelete, onAdd, onSettings,
   themeMode, resolvedTheme, setThemeMode, themeSubtext,
 }) {
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredArticles = articles.filter(a =>
+    a.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    a.siteName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    a.byline?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', position: 'relative' }}>
       <div className="top-bar">
@@ -171,17 +179,43 @@ export default function LibraryList({
         </div>
       </div>
 
+      <div style={{ padding: '8px 16px', background: 'var(--bg-page)' }}>
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 8,
+          background: 'var(--bg-card)', border: '0.5px solid var(--border)',
+          borderRadius: 8, padding: '8px 12px'
+        }}>
+          <IconSearch size={16} color="var(--text-secondary)" />
+          <input
+            type="text"
+            placeholder="Search articles..."
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            style={{
+              flex: 1, background: 'transparent', border: 'none',
+              outline: 'none', fontSize: 14, color: 'var(--text-primary)'
+            }}
+          />
+        </div>
+      </div>
+
       <div className="divider" />
 
-      {articles.map((article, idx) => (
-        <SwipeableRow
-          key={article.id}
-          article={article}
-          onOpen={onOpen}
-          onDelete={onDelete}
-          isLast={idx === articles.length - 1}
-        />
-      ))}
+      {filteredArticles.length === 0 ? (
+        <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--text-secondary)', fontSize: 14 }}>
+          No articles found for "{searchQuery}"
+        </div>
+      ) : (
+        filteredArticles.map((article, idx) => (
+          <SwipeableRow
+            key={article.id}
+            article={article}
+            onOpen={onOpen}
+            onDelete={onDelete}
+            isLast={idx === filteredArticles.length - 1}
+          />
+        ))
+      )}
     </div>
   );
 }

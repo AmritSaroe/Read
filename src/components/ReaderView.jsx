@@ -2,10 +2,10 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import {
   IconChevronLeft,
   IconShare,
-  IconHighlight,
-  IconCopy,
   IconX,
-  IconTextSize,
+  IconSun,
+  IconMoon,
+  IconContrast,
 } from '@tabler/icons-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTypography } from '../hooks/useTypography';
@@ -20,60 +20,25 @@ import { useTypography } from '../hooks/useTypography';
  *   resolvedTheme string
  */
 
-/**
- * Re-applies saved highlight marks inside a DOM node.
- * We match by exact text substring and wrap first occurrence with <mark>.
- * This is best-effort; overlapping/duplicate texts are not guaranteed.
- */
-function reApplyHighlights(rootEl, highlightTexts) {
-  if (!rootEl || !highlightTexts.length) return;
 
-  for (const { text } of highlightTexts) {
-    if (!text) continue;
-    // Walk all text nodes and find first matching one
-    const walker = document.createTreeWalker(rootEl, NodeFilter.SHOW_TEXT, null);
-    let node;
-    while ((node = walker.nextNode())) {
-      const idx = node.nodeValue.indexOf(text);
-      if (idx !== -1) {
-        const before = node.nodeValue.slice(0, idx);
-        const after = node.nodeValue.slice(idx + text.length);
-        const mark = document.createElement('mark');
-        mark.textContent = text;
-        const parent = node.parentNode;
-        // Replace text node with [before text] + [mark] + [after text]
-        if (before) parent.insertBefore(document.createTextNode(before), node);
-        parent.insertBefore(mark, node);
-        if (after) parent.insertBefore(document.createTextNode(after), node);
-        parent.removeChild(node);
-        break; // only mark first occurrence per saved highlight
-      }
-    }
-  }
-}
 
-export default function ReaderView({ article, onBack }) {
+const THEMES = [
+  { mode: 'light', Icon: IconSun,      label: 'Light'  },
+  { mode: 'dark',  Icon: IconMoon,     label: 'Dark'   },
+  { mode: 'sepia', Icon: IconContrast, label: 'Sepia'  },
+];
+
+export default function ReaderView({ article, onBack, themeMode, resolvedTheme, setThemeMode }) {
   const [chromeVisible, setChromeVisible] = useState(true);
   const [readProgress, setReadProgress] = useState(0);
   const [fontSheetOpen, setFontSheetOpen] = useState(false);
   const { typography, setFontFamily, setFontSize, setLineHeight } = useTypography();
-  const [highlights, setHighlights] = useState(() => {
-    const stored = localStorage.getItem(`highlights_${article.id}`);
-    return stored ? JSON.parse(stored) : [];
-  });
-  const [popover, setPopover] = useState(null);
 
   const scrollRef = useRef(null);
   const bodyRef = useRef(null);
   const lastScrollY = useRef(0);
 
-  // Re-apply persisted highlights after article HTML renders
-  useEffect(() => {
-    if (bodyRef.current && highlights.length > 0) {
-      reApplyHighlights(bodyRef.current, highlights);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Only run once on mount
+  const activeTheme = themeMode === 'auto' ? resolvedTheme : themeMode;
 
   // ── Scroll: hide chrome on scroll-down, tap to reveal — spec §3.5 ──
   const handleScroll = useCallback(() => {
@@ -101,65 +66,9 @@ export default function ReaderView({ article, onBack }) {
   // Tap anywhere in content → reveal chrome — spec §3.5
   const handleContentTap = useCallback(() => {
     setChromeVisible(true);
-    setPopover(null);
   }, []);
 
-  // ── Text selection popover — spec §3.6 ──
-  const handleSelectionChange = useCallback(() => {
-    const sel = window.getSelection();
-    if (!sel || sel.isCollapsed || !sel.toString().trim()) {
-      setPopover(null);
-      return;
-    }
-    const range = sel.getRangeAt(0);
-    const rect = range.getBoundingClientRect();
-    const scrollEl = scrollRef.current;
-    const scrollRect = scrollEl ? scrollEl.getBoundingClientRect() : { left: 0, top: 0 };
-    setPopover({
-      // Position relative to the scroll container so it's within the mobile shell
-      x: rect.left + rect.width / 2 - scrollRect.left,
-      y: rect.top - scrollRect.top + scrollEl.scrollTop,
-      selectedText: sel.toString(),
-      range: range.cloneRange(),
-    });
-  }, []);
 
-  useEffect(() => {
-    document.addEventListener('selectionchange', handleSelectionChange);
-    return () => document.removeEventListener('selectionchange', handleSelectionChange);
-  }, [handleSelectionChange]);
-
-  // Apply highlight — spec §3.6
-  const applyHighlight = useCallback(() => {
-    if (!popover?.range) return;
-    const mark = document.createElement('mark');
-    try {
-      popover.range.surroundContents(mark);
-    } catch {
-      const frag = popover.range.extractContents();
-      mark.appendChild(frag);
-      popover.range.insertNode(mark);
-    }
-    const newHighlight = { text: popover.selectedText, id: Date.now() };
-    const updated = [...highlights, newHighlight];
-    setHighlights(updated);
-    localStorage.setItem(`highlights_${article.id}`, JSON.stringify(updated));
-    window.getSelection()?.removeAllRanges();
-    setPopover(null);
-  }, [popover, highlights, article.id]);
-
-  const handleCopy = useCallback(() => {
-    if (popover?.selectedText) navigator.clipboard.writeText(popover.selectedText).catch(() => {});
-    window.getSelection()?.removeAllRanges();
-    setPopover(null);
-  }, [popover]);
-
-  const handleShare = useCallback(() => {
-    if (navigator.share && popover?.selectedText)
-      navigator.share({ text: popover.selectedText, url: article.originalUrl }).catch(() => {});
-    window.getSelection()?.removeAllRanges();
-    setPopover(null);
-  }, [popover, article.originalUrl]);
 
   const handleShareArticle = () => {
     if (navigator.share)
@@ -251,39 +160,6 @@ export default function ReaderView({ article, onBack }) {
           />
         </div>
 
-        {/* Popover — positioned relative to scroll container — spec §3.6 */}
-        <AnimatePresence>
-          {popover && (
-            <motion.div
-              className="highlight-popover"
-              initial={{ opacity: 0, scale: 0.92, y: 6 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.92 }}
-              transition={{ duration: 0.12 }}
-              style={{
-                position: 'absolute',
-                left: popover.x,
-                top: popover.y - 48,
-              }}
-            >
-              {/* Order: Highlight → Copy → Share — spec §3.6 */}
-              <button className="popover-action" onClick={applyHighlight}>
-                <IconHighlight size={14} strokeWidth={2} />
-                Highlight
-              </button>
-              <div className="popover-divider-v" />
-              <button className="popover-action" onClick={handleCopy}>
-                <IconCopy size={14} strokeWidth={2} />
-                Copy
-              </button>
-              <div className="popover-divider-v" />
-              <button className="popover-action" onClick={handleShare}>
-                <IconShare size={14} strokeWidth={2} />
-                Share
-              </button>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </div>
 
       {/* ── Progress bar — spec §3.5: 2px, always visible, pinned to bottom ── */}
@@ -378,6 +254,42 @@ export default function ReaderView({ article, onBack }) {
                   The quick brown fox jumps over the lazy dog.
                 </p>
               </div>
+
+              {/* ── Theme ── */}
+              <div style={{ padding: '0 20px', marginBottom: 20 }}>
+                <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: 10 }}>
+                  Theme
+                </p>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  {THEMES.map(({ mode, Icon, label }) => {
+                    const isActive = activeTheme === mode;
+                    return (
+                      <button
+                        key={mode}
+                        onClick={() => setThemeMode(mode)}
+                        style={{
+                          flex: 1,
+                          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
+                          padding: '12px 0',
+                          borderRadius: 12,
+                          border: isActive ? '1.5px solid var(--text-primary)' : '0.5px solid var(--border)',
+                          background: isActive ? 'var(--text-primary)' : 'var(--bg-card)',
+                          cursor: 'pointer',
+                          transition: 'all 0.18s ease',
+                        }}
+                      >
+                        <Icon size={20} strokeWidth={1.75} color={isActive ? 'var(--bg-page)' : 'var(--text-secondary)'} />
+                        <span style={{ fontSize: 12, fontWeight: isActive ? 500 : 400, color: isActive ? 'var(--bg-page)' : 'var(--text-secondary)' }}>
+                          {label}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Hairline divider */}
+              <div style={{ height: '0.5px', background: 'var(--border)', margin: '0 0 20px' }} />
 
               {/* ── Typeface ── */}
               <div style={{ padding: '0 20px', marginBottom: 20 }}>

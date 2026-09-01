@@ -128,6 +128,7 @@ export default function App() {
             <ReaderView
               article={currentArticle}
               onBack={handleBack}
+              {...themeProps}
             />
           </motion.div>
         )}

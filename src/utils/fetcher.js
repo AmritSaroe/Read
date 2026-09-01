@@ -67,12 +67,19 @@ function parseNextData(doc) {
     const bsArticle = data?.props?.pageProps?.article || data?.props?.pageProps?.data?.article;
     if (bsArticle && bsArticle.htmlContent) {
       log.info(Category.PARSE, `Found structured data (Variant A)`);
+      
+      let content = bsArticle.htmlContent;
+      // Prepend the cover image/illustration if it exists outside the main content
+      if (bsArticle.articleContentImage) {
+        content = bsArticle.articleContentImage + content;
+      }
+      
       return {
         title: bsArticle.heading1 || bsArticle.pageTitle || bsArticle.meta_title,
         byline: bsArticle.authorName || bsArticle.authorDetails?.map(a => a.name).join(', ') || '',
-        content: bsArticle.htmlContent,
-        textContent: bsArticle.htmlContent.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim(),
-        length: bsArticle.htmlContent.length,
+        content: content,
+        textContent: content.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim(),
+        length: content.length,
         excerpt: bsArticle.description || bsArticle.metaDescription || '',
         siteName: 'Web Article',
       };
@@ -291,7 +298,7 @@ export async function fetchAndParseArticle(url) {
         'a', 'img', 'figure', 'figcaption', 'mark', 'code', 'pre',
         'aside', 'div', 'span',
       ],
-      ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'class'],
+      ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'class', 'width', 'height'],
     });
 
     log.info(Category.FETCH, `fetchAndParseArticle complete`, {

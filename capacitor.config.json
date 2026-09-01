@@ -8,6 +8,11 @@
   "plugins": {
     "CapacitorHttp": {
       "enabled": true
+    },
+    "SplashScreen": {
+      "launchShowDuration": 0,
+      "backgroundColor": "#1f1e1b",
+      "showSpinner": false
     }
   }
 }

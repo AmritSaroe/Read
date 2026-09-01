@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">ReadApp</string>
+    <string name="title_activity_main">ReadApp</string>
+    <string name="package_name">com.amrit.readapp</string>
+    <string name="custom_url_scheme">com.amrit.readapp</string>
+</resources>

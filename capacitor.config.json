@@ -1,0 +1,13 @@
+{
+  "appId": "com.amrit.readapp",
+  "appName": "Read",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https"
+  },
+  "plugins": {
+    "CapacitorHttp": {
+      "enabled": true
+    }
+  }
+}

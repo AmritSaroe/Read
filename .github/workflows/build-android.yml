@@ -13,11 +13,11 @@ jobs:
     steps:
       # ── 1. Checkout ────────────────────────────────────────────────────
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       # ── 2. Node.js ─────────────────────────────────────────────────────
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
@@ -43,7 +43,7 @@ jobs:
 
       # ── 7. Cache Gradle to speed up future runs ────────────────────────
       - name: Cache Gradle
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             ~/.gradle/caches
@@ -63,7 +63,7 @@ jobs:
 
       # ── 10. Upload APK as a downloadable artifact ──────────────────────
       - name: Upload APK artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: read-app-debug
           path: android/app/build/outputs/apk/debug/app-debug.apk

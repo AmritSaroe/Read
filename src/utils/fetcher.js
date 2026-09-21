@@ -325,6 +325,19 @@ export async function fetchAndParseArticle(url) {
       ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'class', 'width', 'height'],
     });
 
+    // Make sure all URLs are absolute
+    const finalParser = new DOMParser();
+    const finalDoc = finalParser.parseFromString(cleanHtml, 'text/html');
+    const finalBase = finalDoc.createElement('base');
+    finalBase.href = url;
+    finalDoc.head.prepend(finalBase);
+    finalDoc.querySelectorAll('a').forEach(a => {
+        if (a.hasAttribute('href')) {
+             a.setAttribute('href', a.href);
+        }
+    });
+    const finalHtml = finalDoc.body.innerHTML;
+
     log.info(Category.FETCH, `fetchAndParseArticle complete`, {
       url,
       total_elapsed_ms: Date.now() - fetchStart,
@@ -334,7 +347,7 @@ export async function fetchAndParseArticle(url) {
       title: article.title,
       byline: article.byline,
       dir: article.dir,
-      content: cleanHtml,
+      content: finalHtml,
       textContent: article.textContent,
       length: article.length,
       excerpt: article.excerpt,

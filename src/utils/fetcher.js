@@ -286,6 +286,24 @@ export async function fetchAndParseArticle(url) {
     } else {
       log.debug(Category.PARSE, `Running Readability as fallback`);
       
+      // Pre-process DOM: Preserve THBL "Also Read" embedded callouts
+      const alsoReads = doc.querySelectorAll('.also-read, .related-articles, .story-related');
+      for (const box of alsoReads) {
+        const link = box.querySelector('a');
+        if (link) {
+          const p = doc.createElement('p');
+          p.innerHTML = `ALREADY_READ_MARKER_START <a href="${link.href}">${link.textContent.trim() || link.title}</a> ALREADY_READ_MARKER_END`;
+          
+          let parent = box;
+          while(parent.parentElement && typeof parent.parentElement.className === 'string' && (parent.parentElement.className.includes('box-') || parent.parentElement.className.includes('sidebar'))) {
+             parent = parent.parentElement;
+          }
+          if (parent.parentNode) {
+            parent.parentNode.replaceChild(p, parent);
+          }
+        }
+      }
+
       // Pre-process DOM: Fix <picture> tags with lazy-loaded or spacer fallbacks
       const pictures = doc.querySelectorAll('picture');
       for (const pic of pictures) {
@@ -317,6 +335,10 @@ export async function fetchAndParseArticle(url) {
 
       const reader = new Readability(doc, { charThreshold: 100, keepClasses: false });
       article = reader.parse();
+      if (article && article.content) {
+          article.content = article.content.replace(/ALREADY_READ_MARKER_START\s*/g, '<aside class="also-read"><span class="also-read-label">Also Read</span> ');
+          article.content = article.content.replace(/\s*ALREADY_READ_MARKER_END/g, '</aside>');
+      }
     }
 
     if (!article) {

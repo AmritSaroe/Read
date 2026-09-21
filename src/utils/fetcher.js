@@ -286,6 +286,24 @@ export async function fetchAndParseArticle(url) {
     } else {
       log.debug(Category.PARSE, `Running Readability as fallback`);
       
+      // Pre-process DOM: Fix <picture> tags with lazy-loaded or spacer fallbacks
+      const pictures = doc.querySelectorAll('picture');
+      for (const pic of pictures) {
+        const source = pic.querySelector('source');
+        const img = pic.querySelector('img');
+        if (source && img) {
+           const srcset = source.getAttribute('srcset') || source.getAttribute('data-srcset');
+           if (srcset) {
+               const realUrl = srcset.split(',')[0].trim().split(' ')[0];
+               if (realUrl && realUrl.length > 5) {
+                   img.setAttribute('src', realUrl);
+                   img.removeAttribute('width');
+                   img.removeAttribute('height');
+               }
+           }
+        }
+      }
+
       // Pre-process DOM: Fix lazy-loaded images so Readability doesn't strip them
       const images = doc.querySelectorAll('img');
       for (const img of images) {

@@ -316,8 +316,16 @@ export async function fetchAndParseArticle(url) {
       for (const div of paywalls) {
           div.style.display = 'block';
       }
-      const etAds = doc.querySelectorAll('.article_blocker, .paywall_blocker, .subscription-block, .prWidget, .auth_info, .m_art_details, .share_block');
+      const isHardPaywall = doc.querySelector('.paywall_wrap, .paywall_box, .articleBlocker, .login_ln') !== null;
+      const etAds = doc.querySelectorAll('.articleBlocker, .article_blocker, .paywall_wrap, .paywall_box, .paywall_blocker, .subscription-block, .prWidget, .auth_info, .m_art_details, .share_block, .login_ln');
       etAds.forEach(ad => ad.remove());
+      
+      if (isHardPaywall) {
+          const p = doc.createElement('p');
+          p.innerHTML = `<br><em>[This article was truncated by the publisher's strict server-side paywall. A subscription is required to read the full text.]</em>`;
+          const artData = doc.querySelector('.articleData, .artText, article') || doc.body;
+          artData.appendChild(p);
+      }
 
       // Pre-process DOM: Fix <picture> tags with lazy-loaded or spacer fallbacks
       const pictures = doc.querySelectorAll('picture');

@@ -236,6 +236,13 @@ function parseNextData(doc) {
 
 
 export async function fetchAndParseArticle(url) {
+  // Automatically use AMP pages for Economic Times to bypass paywalls
+  if (url.includes('economictimes.indiatimes.com') || url.includes('m.economictimes.com')) {
+    if (!url.includes('/amp_')) {
+      url = url.replace(/(\/articleshow\/|\/primearticleshow\/)/, '/amp_$1');
+    }
+  }
+
   const fetchStart = Date.now();
   log.info(Category.FETCH, `fetchAndParseArticle called`, {
     url,
@@ -303,6 +310,14 @@ export async function fetchAndParseArticle(url) {
           }
         }
       }
+
+      // Pre-process DOM: Economic Times AMP paywall bypass & boilerplate cleanup
+      const paywalls = doc.querySelectorAll('.paywall');
+      for (const div of paywalls) {
+          div.style.display = 'block';
+      }
+      const etAds = doc.querySelectorAll('.article_blocker, .paywall_blocker, .subscription-block, .prWidget, .auth_info, .m_art_details, .share_block');
+      etAds.forEach(ad => ad.remove());
 
       // Pre-process DOM: Fix <picture> tags with lazy-loaded or spacer fallbacks
       const pictures = doc.querySelectorAll('picture');

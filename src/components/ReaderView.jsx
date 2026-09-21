@@ -6,6 +6,8 @@ import {
   IconSun,
   IconMoon,
   IconContrast,
+  IconBookmark,
+  IconLoader2,
 } from '@tabler/icons-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTypography } from '../hooks/useTypography';
@@ -28,7 +30,7 @@ const THEMES = [
   { mode: 'sepia', Icon: IconContrast, label: 'Sepia'  },
 ];
 
-export default function ReaderView({ article, onBack, themeMode, resolvedTheme, setThemeMode }) {
+export default function ReaderView({ article, onBack, themeMode, resolvedTheme, setThemeMode, isSaved, onSave, onLinkClick, isFetchingLink }) {
   const [chromeVisible, setChromeVisible] = useState(true);
   const [readProgress, setReadProgress] = useState(0);
   const [fontSheetOpen, setFontSheetOpen] = useState(false);
@@ -39,6 +41,12 @@ export default function ReaderView({ article, onBack, themeMode, resolvedTheme, 
   const lastScrollY = useRef(0);
 
   const activeTheme = themeMode === 'auto' ? resolvedTheme : themeMode;
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = 0;
+    }
+  }, [article.id]);
 
   // ── Scroll: hide chrome on scroll-down, tap to reveal — spec §3.5 ──
   const handleScroll = useCallback(() => {
@@ -107,9 +115,20 @@ export default function ReaderView({ article, onBack, themeMode, resolvedTheme, 
               <button className="icon-btn" onClick={() => setFontSheetOpen(true)} aria-label="Font settings">
                 <span style={{ fontSize: 14, fontWeight: 500, letterSpacing: '-0.02em' }}>Aa</span>
               </button>
-              <button className="icon-btn" onClick={handleShareArticle} aria-label="Share">
-                <IconShare size={16} strokeWidth={2} />
-              </button>
+              {!isSaved && (
+                <button className="icon-btn" onClick={onSave} aria-label="Save Article">
+                  <IconBookmark size={16} strokeWidth={2} />
+                </button>
+              )}
+              {isFetchingLink ? (
+                <button className="icon-btn" disabled>
+                  <IconLoader2 size={16} strokeWidth={2} className="spin" />
+                </button>
+              ) : (
+                <button className="icon-btn" onClick={handleShareArticle} aria-label="Share">
+                  <IconShare size={16} strokeWidth={2} />
+                </button>
+              )}
             </div>
           </motion.div>
         )}
@@ -125,7 +144,16 @@ export default function ReaderView({ article, onBack, themeMode, resolvedTheme, 
           scrollbarWidth: 'none',
           position: 'relative',
         }}
-        onClick={handleContentTap}
+        onClick={(e) => {
+          handleContentTap();
+          const a = e.target.closest('a');
+          if (a && a.href) {
+            e.preventDefault();
+            if (onLinkClick) {
+              onLinkClick(a.href);
+            }
+          }
+        }}
       >
         <div style={{ padding: '64px 24px 80px' }}>
           {/* Title */}

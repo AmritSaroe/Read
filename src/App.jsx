@@ -9,6 +9,7 @@ import ReaderView from './components/ReaderView';
 import SettingsSheet from './components/SettingsSheet';
 import SplashScreen from './components/SplashScreen';
 import { WELCOME_ARTICLE } from './data/welcomeArticle';
+import { fetchAndParseArticle } from './utils/fetcher';
 import { log, Category } from './utils/logger';
 import './index.css';
 
@@ -36,9 +37,12 @@ export default function App() {
     }
     return [];
   });
-  const [currentArticle, setCurrentArticle] = useState(null);
+  const [readerStack, setReaderStack] = useState([]);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [isFetchingLink, setIsFetchingLink] = useState(false);
+
+  const currentArticle = readerStack[readerStack.length - 1];
 
   const persistArticles = (updated) => {
     setArticles(updated);
@@ -53,16 +57,21 @@ export default function App() {
 
   const handleOpenArticle = (article) => {
     log.info(Category.NAV, 'Navigating to reader', { articleId: article.id, title: article.title });
-    setCurrentArticle(article);
+    setReaderStack([article]);
     setView('reader');
     window.scrollTo(0, 0);
   };
 
   const handleBack = useCallback(() => {
-    log.info(Category.NAV, 'Navigating back to library');
-    setView('library');
-    setTimeout(() => setCurrentArticle(null), 300);
-  }, []);
+    if (readerStack.length > 1) {
+      setReaderStack(prev => prev.slice(0, -1));
+      window.scrollTo(0, 0);
+    } else {
+      log.info(Category.NAV, 'Navigating back to library');
+      setView('library');
+      setTimeout(() => setReaderStack([]), 300);
+    }
+  }, [readerStack]);
 
   const handleDeleteArticle = (id) => {
     log.info(Category.APP, 'Article deleted', { id });
@@ -73,6 +82,31 @@ export default function App() {
     setShowSplash(false);
     log.info(Category.APP, 'Splash complete, library visible');
   }, []);
+
+  const handleLinkClick = async (url) => {
+    setIsFetchingLink(true);
+    try {
+      const article = await fetchAndParseArticle(url);
+      setReaderStack(prev => [...prev, { ...article, id: Date.now().toString(), isTemporary: true }]);
+      window.scrollTo(0, 0);
+    } catch (err) {
+      alert("Could not load link: " + err.message);
+    } finally {
+      setIsFetchingLink(false);
+    }
+  };
+
+  const handleSaveCurrent = () => {
+    if (!currentArticle) return;
+    const newArticle = { ...currentArticle, isTemporary: false, addedAt: new Date().toISOString() };
+    persistArticles([newArticle, ...articles]);
+    
+    setReaderStack(prev => {
+        const newStack = [...prev];
+        newStack[newStack.length - 1] = newArticle;
+        return newStack;
+    });
+  };
 
   const themeProps = { themeMode, resolvedTheme, setThemeMode, themeSubtext };
 
@@ -99,6 +133,8 @@ export default function App() {
       listener.then(l => l.remove());
     };
   }, [view, sheetOpen, settingsOpen, handleBack]);
+
+  const isCurrentSaved = currentArticle && articles.some(a => a.id === currentArticle.id) && !currentArticle.isTemporary;
 
   return (
     <div className="app-shell">
@@ -155,6 +191,10 @@ export default function App() {
             <ReaderView
               article={currentArticle}
               onBack={handleBack}
+              isSaved={isCurrentSaved}
+              onSave={handleSaveCurrent}
+              onLinkClick={handleLinkClick}
+              isFetchingLink={isFetchingLink}
               {...themeProps}
             />
           </motion.div>
@@ -162,7 +202,6 @@ export default function App() {
 
       </AnimatePresence>
 
-      {/* SettingsSheet rendered at App level — covers full app-shell */}
       <SettingsSheet
         isOpen={settingsOpen}
         onClose={() => setSettingsOpen(false)}

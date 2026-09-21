@@ -376,7 +376,16 @@ export async function fetchAndParseArticle(url) {
              a.setAttribute('href', a.href);
         }
     });
-    const finalHtml = finalDoc.body.innerHTML;
+    
+    let finalHtml = finalDoc.body.innerHTML;
+
+    // Ensure hero image is present
+    if (thumbnail) {
+      const thumbFile = thumbnail.split('/').pop().split('?')[0];
+      if (thumbFile && thumbFile.length > 3 && !finalHtml.includes(thumbFile)) {
+         finalHtml = `<figure><img src="${thumbnail}" alt="Hero Image" /></figure>\n` + finalHtml;
+      }
+    }
 
     log.info(Category.FETCH, `fetchAndParseArticle complete`, {
       url,

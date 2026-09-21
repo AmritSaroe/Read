@@ -95,6 +95,30 @@ function parseNextData(doc) {
 
     const parts = [];
 
+    // Extract lead image
+    if (storyDetails.leadMedia && storyDetails.leadMedia.image) {
+      const imgObj = storyDetails.leadMedia.image;
+      const imgs = imgObj.images || {};
+      const imgUrl =
+        imgs['1600x900'] ||
+        imgs['fullImage'] ||
+        imgs['1200x900'] ||
+        imgs['bigImage'] ||
+        imgs['optimize'] ||
+        imgObj.imageUrl;
+      const caption = imgObj.caption?.trim() || '';
+      const credit = imgObj.imageCredit?.trim() || '';
+      const alt = caption || imgObj.alternateText || storyDetails.headline || '';
+
+      if (imgUrl) {
+        const creditHtml = credit ? ` <span class="img-credit">${credit}</span>` : '';
+        const captionHtml = caption || credit
+          ? `<figcaption>${caption}${creditHtml}</figcaption>`
+          : '';
+        parts.push(`<figure><img src="${imgUrl}" alt="${alt}" />${captionHtml}</figure>`);
+      }
+    }
+
     for (const el of storyDetails.listElement) {
       // Skip paywalled elements
       if (el.paywallElement) continue;
